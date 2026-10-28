@@ -426,8 +426,8 @@ with tab3:
             paper_bgcolor="rgba(0,0,0,0)",
             height=450,
             xaxis=dict(title="Hour of Day (UTC)", tickmode="linear", tick0=0, dtick=2),
-            yaxis=dict(title="Electricity Price (EUR/MWh)", titlefont=dict(color="#f43f5e"), tickfont=dict(color="#f43f5e")),
-            yaxis2=dict(title="Generation (GWh)", titlefont=dict(color="#fbbf24"), tickfont=dict(color="#fbbf24"), overlaying="y", side="right"),
+            yaxis=dict(title=dict(text="Electricity Price (EUR/MWh)", font=dict(color="#f43f5e")), tickfont=dict(color="#f43f5e")),
+            yaxis2=dict(title=dict(text="Generation (GWh)", font=dict(color="#fbbf24")), tickfont=dict(color="#fbbf24"), overlaying="y", side="right"),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             barmode="stack",
         )
