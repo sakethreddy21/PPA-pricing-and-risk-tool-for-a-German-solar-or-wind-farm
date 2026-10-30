@@ -13,10 +13,18 @@ class DuckDBManager:
     and analytical views for PPA pricing and risk metrics.
     """
 
-    def __init__(self, db_path: Optional[Union[str, Path]] = None):
+    def __init__(self, db_path: Optional[Union[str, Path]] = None, read_only: bool = False):
         self.db_path = str(db_path or DUCKDB_PATH)
-        self.conn = duckdb.connect(self.db_path)
-        self._init_schema()
+        self.read_only = read_only
+        try:
+            self.conn = duckdb.connect(self.db_path, read_only=read_only)
+            if not read_only:
+                self._init_schema()
+        except Exception as e:
+            logger.info(f"Opening DuckDB in read-only mode due to lock: {e}")
+            self.conn = duckdb.connect(self.db_path, read_only=True)
+            self.read_only = True
+
 
     def _init_schema(self) -> None:
         """Create tables and analytical views if they do not exist."""
