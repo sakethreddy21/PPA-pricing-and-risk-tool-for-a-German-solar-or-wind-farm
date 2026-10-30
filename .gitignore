@@ -13,8 +13,8 @@ __pycache__/
 # Data storage
 data/*.duckdb
 data/*.duckdb.wal
-data/parquet/
 .env
+
 
 # Build & Testing
 *.egg-info/

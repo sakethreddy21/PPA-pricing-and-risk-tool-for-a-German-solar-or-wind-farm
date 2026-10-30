@@ -10,16 +10,44 @@ root_dir = Path(__file__).resolve().parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
+from contextlib import asynccontextmanager
+import logging
+
 from ppa_pipeline.storage.duckdb_manager import DuckDBManager
 from ppa_pipeline.models.generation import AssetSpecification, TechnologyType
 from ppa_pipeline.models.price_simulation import SimulationConfig
 from ppa_pipeline.pricing.ppa_pricer import PayAsProducedPricer, PpaContractStructure
 from ppa_pipeline.analytics.ppa_metrics import PpaRiskAnalytics
 
+logger = logging.getLogger("api")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Auto-seed database from bundled Parquet files if empty (essential for cloud deployments)
+    try:
+        db = DuckDBManager()
+        counts = db.get_table_counts()
+        if counts.get("market_prices", 0) == 0:
+            parquet_dir = root_dir / "data" / "parquet"
+            if (parquet_dir / "market_prices.parquet").exists():
+                logger.info("Auto-seeding DuckDB tables from bundled Parquet files...")
+                db.conn.execute(f"INSERT OR IGNORE INTO market_prices SELECT * FROM read_parquet('{parquet_dir}/market_prices.parquet')")
+                db.conn.execute(f"INSERT OR IGNORE INTO market_generation SELECT * FROM read_parquet('{parquet_dir}/market_generation.parquet')")
+                db.conn.execute(f"INSERT OR IGNORE INTO market_forecasts SELECT * FROM read_parquet('{parquet_dir}/market_forecasts.parquet')")
+                db.conn.execute(f"INSERT OR IGNORE INTO weather_timeseries SELECT * FROM read_parquet('{parquet_dir}/weather_timeseries.parquet')")
+                logger.info("✓ DuckDB seeded successfully from Parquet!")
+        db.close()
+    except Exception as e:
+        logger.warning(f"Startup database auto-seed check: {e}")
+    yield
+
+
 app = FastAPI(
     title="German Renewable PPA Pricing API",
     version="1.0.0",
     description="Quantitative REST API for Pay-as-Produced PPA valuation and risk simulation.",
+    lifespan=lifespan,
 )
 
 # Enable CORS for Next.js frontend
