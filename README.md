@@ -50,12 +50,21 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-### 2. Launch the Interactive Dashboard
-Launch the web terminal to price contracts and explore risk scenarios visually:
+### 2. Launch the Next.js + FastAPI Modern Web Stack
+Run the full-stack financial terminal:
 
 ```bash
-streamlit run dashboard/app.py
+# Terminal 1: Start FastAPI REST Backend (Port 8000)
+uvicorn api.main:app --host 0.0.0.0 --port 8000
+
+# Terminal 2: Start Next.js App Router Frontend (Port 3000)
+cd frontend && npm run dev
 ```
+* **Frontend UI**: [http://localhost:3000](http://localhost:3000)
+* **Interactive API Docs (Swagger UI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+*(Optional: The classic Streamlit dashboard is also available via `streamlit run dashboard/app.py`)*
+
 
 ### 3. Price Assets via CLI
 Run the Pay-as-Produced PPA pricer directly from the terminal:
